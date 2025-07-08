@@ -184,9 +184,9 @@ npm install tailwindcss-animate next-themes --legacy-peer-deps
 ---
 
 ## 🟢 Live Deployment
-> **Live Demo:** _Coming soon!_
-> 
-> The production deployment link will be added here after deployment.
+**Live Demo:** [https://neighborfit-platform-lvaitwagq-ashirvaddubeys-projects.vercel.app](https://neighborfit-platform-lvaitwagq-ashirvaddubeys-projects.vercel.app)
+
+The application is deployed and live! Visit the link above to explore NeighborFit in production.
 
 ---
 
