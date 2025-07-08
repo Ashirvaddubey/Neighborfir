@@ -48,6 +48,8 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+  // Add local editable user state
+  const [editUser, setEditUser] = useState<UserType | null>(null)
 
   // Preference sliders state
   const [preferences, setPreferences] = useState({
@@ -79,6 +81,7 @@ export default function ProfilePage() {
     }
 
     setUser(currentUser)
+    setEditUser(currentUser) // initialize editUser
     setLoading(false)
     setShowSuccess(true)
     setTimeout(() => setShowSuccess(false), 5000)
@@ -88,6 +91,41 @@ export default function ProfilePage() {
     // Save preferences logic
     setShowSuccess(true)
     setTimeout(() => setShowSuccess(false), 3000)
+  }
+
+  // Add handler for saving edited profile
+  const handleSaveProfile = () => {
+    if (editUser) {
+      setUser(editUser)
+      setEditing(false)
+      setShowSuccess(true)
+      setTimeout(() => setShowSuccess(false), 3000)
+    }
+  }
+
+  // Add export and share handlers
+  const handleExportData = () => {
+    const dataStr = JSON.stringify(savedAreas, null, 2)
+    const blob = new Blob([dataStr], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'saved-areas.json'
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  const handleShareList = async () => {
+    const summary = savedAreas.map(area => `${area.name} (${area.location}) - ${area.price}, Match: ${area.match}`).join('\n')
+    try {
+      await navigator.clipboard.writeText(summary)
+      setShowSuccess(true)
+      setTimeout(() => setShowSuccess(false), 2000)
+    } catch (err) {
+      alert('Failed to copy to clipboard')
+    }
   }
 
   // Add a loading state check
@@ -280,6 +318,38 @@ export default function ProfilePage() {
 
           {/* Center - Lifestyle Preferences */}
           <div className="lg:col-span-6">
+            {/* Show edit form if editing is true */}
+            {editing ? (
+              <Card className="bg-slate-800/50 backdrop-blur-xl border-slate-700 mb-6">
+                <CardHeader>
+                  <CardTitle className="text-blue-400 text-xl">Edit Profile</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div>
+                    <Label className="text-white font-medium">Name</Label>
+                    <input
+                      type="text"
+                      className="w-full mt-1 p-2 rounded bg-slate-700 text-white border border-slate-600"
+                      value={editUser?.name || ''}
+                      onChange={e => setEditUser(editUser ? { ...editUser, name: e.target.value } : null)}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-white font-medium">Email</Label>
+                    <input
+                      type="email"
+                      className="w-full mt-1 p-2 rounded bg-slate-700 text-white border border-slate-600"
+                      value={editUser?.email || ''}
+                      onChange={e => setEditUser(editUser ? { ...editUser, email: e.target.value } : null)}
+                    />
+                  </div>
+                  <div className="flex gap-4 mt-4">
+                    <Button onClick={handleSaveProfile} className="bg-blue-600 hover:bg-blue-700 text-white flex-1">Save</Button>
+                    <Button onClick={() => { setEditing(false); setEditUser(user); }} variant="outline" className="flex-1">Cancel</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : null}
             <Card className="bg-slate-800/50 backdrop-blur-xl border-slate-700">
               <CardHeader>
                 <CardTitle className="text-blue-400 text-xl">Lifestyle Preferences</CardTitle>
@@ -450,6 +520,7 @@ export default function ProfilePage() {
                   <Button
                     variant="outline"
                     className="w-full bg-slate-700/50 border-slate-600 text-white hover:bg-slate-600/50"
+                    onClick={handleExportData}
                   >
                     <Download className="h-4 w-4 mr-2" />
                     Export Data
@@ -457,6 +528,7 @@ export default function ProfilePage() {
                   <Button
                     variant="outline"
                     className="w-full bg-slate-700/50 border-slate-600 text-white hover:bg-slate-600/50"
+                    onClick={handleShareList}
                   >
                     <Share2 className="h-4 w-4 mr-2" />
                     Share List
